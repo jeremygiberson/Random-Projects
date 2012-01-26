@@ -1,0 +1,272 @@
+;; Snake Game in windows VIA DrScheme && MrEd
+;; Author: Jeremy Giberson
+;; References: Online Documentation
+;; Game Reference: None, Original - ground up 
+(define (SNAKES)
+    ;; Window and Canvas implimentation extracted and modified from online documentation
+    ;; Make a 340 × 200 canvas
+    (define frame (instantiate frame% ("Nibbles - Dr Scheme Project") (width 340) (height 218) (min-width 340) (min-height 218) (stretchable-width #f) (stretchable-height #f)))
+    ;; message area
+    (define msg (instantiate message% ("Nibbles the Snakes Clone" frame)))
+    (define my-canvas%
+      (class canvas% ; The base class is canvas%
+        ;; Declare overrides:
+        ;(override on-event on-char)
+        (override on-char)
+        ;; Define overriding method to handle mouse events
+        ;(define on-event (lambda (event) (getInput event)))
+        ;; Define overriding method to handle keyboard events
+        (define on-char (lambda (event) (getInput event)))
+        ;; Call the superclass initialization (and pass on all init args)
+        (super-instantiate ())))
+
+         ;; Make a canvas that handles events in the frame
+         (define canvas (instantiate my-canvas% (frame)))
+
+    ;; Get the canvas's drawing context
+    (define dc (send canvas get-dc))
+
+    ;; Make some pens and brushes
+    (define no-pen (instantiate pen% ("BLACK" 1 'transparent)))
+    (define no-brush (instantiate brush% ("BLACK" 'transparent)))
+    (define black-pen (instantiate pen% ("BLACK" 1 'solid)))
+    (define blue-brush (instantiate brush% ("BLUE" 'solid)))
+    (define yellow-brush (instantiate brush% ("YELLOW" 'solid)))
+    (define yellow-pen (instantiate pen% ("LIGHTGREY" 1 'solid)))
+    (define red-pen (instantiate pen% ("RED" 2 'solid)))
+    (define red-brush (instantiate brush% ("RED" 'solid)))
+    (define white-brush (instantiate brush% ("WHITE" 'solid)))
+
+    ;; game structures
+         (define-struct posn (x y))  ;; Recomended Structure for points
+         ;; Define a structure that has a position variable, and next structure pointer
+         (define-struct segment (position next isnextnull))
+
+    ;; game global variables
+         (define SNAKE_HEAD (make-segment (make-posn 30 20) 0 1))
+         (define BLOCKSIZE 10)
+         (define INITIALIZED #f)
+         (define DIRECTION 1) ; 0 = north, 1 = east, 2 = south, 3 = west
+         (define SCORE 0)
+         (define APPLE (make-posn (* 18 10) (* 3 10)))
+
+
+    ;; Append segment function
+    ;; recursively returns a new segment definition, used with set! command to redefine iniitial head node
+    (define (appendSeg thisSeg position) ;; needs head segment above it, and what is to become this segment
+       (cond
+         [(= (segment-isnextnull thisSeg) 0) (make-segment (segment-position thisSeg) (appendSeg (segment-next thisSeg) position) 0)] ;; is next pointer null?
+         [else (make-segment (segment-position thisSeg) (make-segment position 0 1) 0)] ;; it was
+        )
+    )
+
+    ;; Shuffle segment 
+    ;; recursively returns a new segment definition where each next seg has the previous's position
+    (define (shuffleSeg thisSeg position)
+       (cond
+         [(= (segment-isnextnull thisSeg) 0) (make-segment position (shuffleSeg (segment-next thisSeg) (segment-position thisSeg)) 0)] ;; is next pointer null?
+         [else (make-segment position 0 1)] ;; it was
+        )
+    )  
+
+    ;; Get Tail Segment
+    ;; retrieve the position value of tail segment in list
+    (define (getTailSeg thisSeg)
+      (cond
+        [(= (segment-isnextnull thisSeg) 0) (getTailSeg (segment-next thisSeg))]
+        [else (segment-position thisSeg)]
+        )
+    )
+
+    ;;prints an individual segment's position x value
+    (define (printSeg aSegment)
+      (newline)(display "Position (x, y): (")
+      (display (posn-x (segment-position aSegment)))(display ", ")
+      (display (posn-y (segment-position aSegment)))(display ")")
+    )
+
+    ;; Display segment list function
+    (define (displaySeg thisSeg) ;; needs head segment above it, and what is to become this segment
+      (printSeg thisSeg)
+      (cond
+         [(= (segment-isnextnull thisSeg) 0) (displaySeg (segment-next thisSeg))] ;; is next pointer null?
+      )
+    )
+
+    ;; Render individual segment
+    (define (renderSeg aDc aSegment)
+         ;(printSeg aSegment)
+         (send aDc draw-rectangle (posn-x (segment-position aSegment)) (posn-y (segment-position aSegment)) BLOCKSIZE BLOCKSIZE)         
+    )
+
+    ;; Render segment list
+    (define (renderSegList aDc thisSeg)
+      [renderSeg aDc thisSeg]
+       (cond
+         [(= (segment-isnextnull thisSeg) 0) (renderSegList aDc (segment-next thisSeg))]
+         )
+      )
+
+    ;; Render apple
+    (define (renderApple aDc position)
+         (send aDc draw-rectangle (posn-x position) (posn-y position) BLOCKSIZE BLOCKSIZE)         
+    )
+
+    ;; Kindof a debug function
+    ;; nice place to test list functionality
+    (define (TestListFunction)
+        (set! SNAKE_HEAD (appendSeg SNAKE_HEAD (make-posn 20 20)))
+        (set! SNAKE_HEAD (appendSeg SNAKE_HEAD (make-posn 30 20)))
+        (set! SNAKE_HEAD (appendSeg SNAKE_HEAD (make-posn 40 20)))
+       ; (displaySeg SNAKE_HEAD)
+        (set! SNAKE_HEAD (shuffleSeg SNAKE_HEAD (make-posn 10 10)))
+       ; (displaySeg SNAKE_HEAD)
+       (send dc set-brush blue-brush) 
+       (renderSegList (send canvas get-dc) SNAKE_HEAD)
+
+    )
+    (define (renderGame dc)
+      (send dc clear) ; clear the screen to white
+      ;; start rendering the field
+      (send dc set-pen yellow-pen)
+      (do ((y 0))
+           ((> y 20))
+                (send dc draw-line 0 (* y 10) 340 (* y 10))
+           (set! y (+ y 1));; loop until the frame is closed
+      )   
+      (do ((x 0))
+           ((> x 34))
+                (send dc draw-line (* x 10) 0 (* x 10) 200)
+           (set! x (+ x 1));; loop until the frame is closed
+      )  
+
+      ;; render the apple
+      (send dc set-brush red-brush)
+      (renderApple dc APPLE)
+
+      (send dc set-brush blue-brush)
+      (send dc set-pen black-pen)
+      (renderSegList dc SNAKE_HEAD) ;; render the snake
+
+    )
+
+    ;; isCollision boolean
+    ;; detects if snake head has hit an object, apple obstacle
+    (define (isCollision headSeg position)
+        [and (= (posn-x (segment-position headSeg)) (posn-x position)) (= (posn-y (segment-position headSeg)) (posn-y position))]
+    )
+
+    ;; getInput 
+    ;; handles game input-controlling snake
+    (define (getInput event)
+      (cond
+        [(symbol? (send event get-key-code))
+              (cond
+                   [(string=? (symbol->string (send event get-key-code)) (symbol->string 'left))  (turnSnake 3)];(newline)(display "Key Press: left")]
+                   [(string=? (symbol->string (send event get-key-code)) (symbol->string 'right)) (turnSnake 1)];(newline)(display "Key Press: right")]
+                   [(string=? (symbol->string (send event get-key-code)) (symbol->string 'up))    (turnSnake 0)];(newline)(display "Key Press: up")]
+                   [(string=? (symbol->string (send event get-key-code)) (symbol->string 'down))  (turnSnake 2)];(newline)(display "Key Press: down")]
+              )]
+        [(char? (send event get-key-code)) (display "key press: some key")]
+      )
+       ;;(display "Key event happend")
+    )
+
+    ;; turnSnake
+    ;; decides if the snake can turn to a direction
+    (define (turnSnake dir)
+      (cond
+        [(and (or (= dir 0) (= dir 2)) (or (= DIRECTION 1) (= DIRECTION 3))) (set! DIRECTION dir)]
+        [(and (or (= dir 1) (= dir 3)) (or (= DIRECTION 0) (= DIRECTION 2))) (set! DIRECTION dir)]
+      )
+
+    )
+
+    ;; moveSnake
+    ;; moves snake to a new position based on direction
+    (define (moveSnake)
+      (cond
+        [(= DIRECTION 0) (set! SNAKE_HEAD (shuffleSeg SNAKE_HEAD (make-posn (posn-x (segment-position SNAKE_HEAD)) (+ (posn-y (segment-position SNAKE_HEAD)) -10))))]
+        [(= DIRECTION 1) (set! SNAKE_HEAD (shuffleSeg SNAKE_HEAD (make-posn (+ (posn-x (segment-position SNAKE_HEAD)) 10) (posn-y (segment-position SNAKE_HEAD)))))]
+        [(= DIRECTION 2) (set! SNAKE_HEAD (shuffleSeg SNAKE_HEAD (make-posn (posn-x (segment-position SNAKE_HEAD)) (+ (posn-y (segment-position SNAKE_HEAD)) 10))))]
+        [(= DIRECTION 3) (set! SNAKE_HEAD (shuffleSeg SNAKE_HEAD (make-posn (+ (posn-x (segment-position SNAKE_HEAD)) -10) (posn-y (segment-position SNAKE_HEAD)))))]
+        )
+    )
+
+    ;; hasDied boolean
+    ;; runs several collision detection functions, and returns #t if hit some sort of bound
+    ;; and #f is you are still ok
+    (define (hasDied)
+      (cond
+        [(> (posn-x (segment-position SNAKE_HEAD)) 330) #t]
+        [(< (posn-x (segment-position SNAKE_HEAD)) 0) #t]
+        [(> (posn-y (segment-position SNAKE_HEAD)) 190) #t]
+        [(< (posn-y (segment-position SNAKE_HEAD)) 0) #t]
+        [(isCollisionSeg (segment-next SNAKE_HEAD)) (newline)(display "Hah! What kind of worm eats itself?") #t]
+        [else #f]
+      )
+    )
+
+    ;; isCollisionSeg boolean
+    ;; checks that head hasn't collided with the body segments
+    (define (isCollisionSeg checkSeg)
+      (cond
+        [(and (= (posn-x (segment-position SNAKE_HEAD)) (posn-x (segment-position checkSeg))) 
+              (= (posn-y (segment-position SNAKE_HEAD)) (posn-y (segment-position checkSeg))))
+              #t]
+        [(= (segment-isnextnull checkSeg) 0) (isCollisionSeg (segment-next checkSeg))]
+        [else #f]
+       )
+    )
+
+    ;; main program
+    ;; create window with drawing canvas
+    ;; then enter the main game loop
+    (define (main)
+        (define (lastPos)(make-posn 0 0))
+        (set! SNAKE_HEAD (make-segment (make-posn 30 20) 0 1))
+        (set! SNAKE_HEAD (appendSeg SNAKE_HEAD (make-posn 20 20)))
+        (set! SNAKE_HEAD (appendSeg SNAKE_HEAD (make-posn 10 20)))
+
+
+
+        (do ((STOP 0))
+           ((= STOP 1))
+           ;; .. start game functions
+           ;(display "Looping")
+                (set! lastPos (getTailSeg SNAKE_HEAD)) ; get current tail position incase we add a segment
+                (moveSnake) ; change snake position
+                (renderGame dc) ; draw board, apple and snake
+                (cond [(isCollision SNAKE_HEAD APPLE) (set! SNAKE_HEAD (appendSeg SNAKE_HEAD lastPos)) (newline)(display "Ate an Apple!") (set! SCORE (+ SCORE 40))]) ; if you hit an apple, grow
+
+           (send msg set-label (string-append "Points:" (number->string SCORE)))
+           (set! SCORE (+ SCORE 1));; one point for every round you are alive
+           (sleep/yield .15);; allow time for events to happen
+           ;; .. end game functions
+           (cond [(or (not (send frame is-shown?)) (hasDied)) (set! STOP 1)]);; loop until the frame is closed
+        )
+        (newline)(display "Score: ")(display SCORE)
+        (cond
+          [(< SCORE 399) (display " Kinda pathetic, don't ya think?")]
+          [(< SCORE 400) (display " Hey, looks like you learned the game.")]
+          [(< SCORE 1400) (display " Gettin better, But my grandma is still better then you.")]
+          [(< SCORE 2400) (display " Alright! Finally, Some competition has arrived.")]
+          [(< SCORE 3400) (display " Hey, you're doing great!")]
+          [(< SCORE 4000) (display " Seriously, Fantastic!")]
+          [(< SCORE 8000) (display " You Win!")]
+          [else (display " Holy, freakin, cow, dude--You are awsome")]
+         )
+    )
+
+
+
+
+
+    ;; Show the frame
+    (send frame show #t) 
+    ;; Wait a second to let the window get ready
+    (sleep/yield 1)
+
+    (main)
+    (send frame show #f)
+)
