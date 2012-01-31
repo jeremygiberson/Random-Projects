@@ -1,0 +1,61 @@
+/* fabled css classes */
+.fabled-button
+{
+    outline: none;
+    position: relative;
+    display: block;
+    float: left;
+    padding: 6px;
+    text-decoration: none;
+    color: #fff;
+    text-align: center;
+    /*theming*/
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+
+    background: #BBD465; /* old browsers */
+    background: -moz-linear-gradient(top, #BBD465 0%, #d2e638 50%, #c3d825 51%, #7DA718 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#BBD465), color-stop(50%,#d2e638), color-stop(51%,#c3d825), color-stop(100%,#7DA718)); /* webkit */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#BBD465', endColorstr='#7DA718',GradientType=0 ); /* ie */
+
+    -webkit-box-shadow: 1px 1px 2px rgba(0,0,0, 0.5);
+    -moz-box-shadow: 1px 1px 2px rgba(0,0,0, 0.5);
+}
+.fabled-border-container
+{
+    position: relative;
+    float: left;
+    padding: 6px;
+    overflow: auto;
+    margin: 5px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+.fabled-border-container-active { background: rgb(90,99,80); }
+.fabled-border
+{
+    position: absolute; background: rgb(189,193,185);
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+.fabled-border-top-start { top: 0; left: 50%; width: 0%; height: 12px; }
+.fabled-border-right { top: 0; right: 0; width: 12px; height: 0; }
+.fabled-border-bottom { right: 0%; bottom: 0%; width: 0; height: 12px; }
+.fabled-border-left { left: 0%; bottom: 0%; width: 12px; height: 0; }
+.fabled-border-top-end { left: 0%; top: 0%; width: 0; height: 12px; }
+
+.fabled-button-active
+{
+    background: #7DA718; /* old browsers */
+    background: -moz-linear-gradient(top, #7DA718 0%, #d2e638 50%, #c3d825 51%, #BBD465 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#7DA718), color-stop(50%,#d2e638), color-stop(51%,#c3d825), color-stop(100%,#BBD465)); /* webkit */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7DA718', endColorstr='#BBD465',GradientType=0 ); /* ie */
+}
+.fabled-button-clicked
+{
+    background: #637143; /* old browsers */
+    background: -moz-linear-gradient(top, #637143 1%, #516331 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#637143), color-stop(100%,#516331)); /* webkit */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#637143', endColorstr='#516331',GradientType=0 ); /* ie */
+}
+.fabled-button-clicked:before { content: '\2713'; }
