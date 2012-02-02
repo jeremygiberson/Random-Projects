@@ -1,0 +1,4 @@
+A bayesian engine I created in PHP. 
+Included are the engine files and a corpus generator that scrapes reddit.com comments. 
+A far warning, reddit comments (and probably comment content in general) do not make for good corpus if you're looking to do spam training. Comment "spaminess" is rather subjective and tends to be all over the place. A better corpus is mail spam because there is a pretty consistant attitude for what qualifies as spam and what does not. 
+I had made a post on stack overflow for my implementation of bayesian algorithm only to later realize the odd output was a result of my corpus choice. That post is available here: http://stackoverflow.com/questions/6463983/combining-individual-probabilities-in-naive-bayesian-spam-filtering
