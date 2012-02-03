@@ -1,0 +1,88 @@
+<html>
+	<head>
+		<script type='text/javascript' src='unicode.js'></script>
+		<script type='text/javascript' src='stroke.js'></script>
+		<script type='text/javascript'>
+
+			var cvs, ctx;
+			window.onload = function(){
+				cvs = document.getElementById('screen');
+				ctx = cvs.getContext('2d');
+			};
+
+			function drawCharBox(romaji, char, size)
+			{
+				// clear cvs
+				cvs.width = cvs.width;
+				cvs.height = cvs.height;
+
+				var dim = measure(char, 'font-size: '+size+'px; font-family: Times;', true);
+				ctx.strokeStyle = '#bbbbbb';
+				ctx.lineWidth = 2;
+				ctx.strokeRect(10, 10, size, size);
+				ctx.strokeStyle = '#eee';
+				ctx.lineWidth = 1;
+				ctx.beginPath();
+				ctx.moveTo(10, 10+size/2);
+				ctx.lineTo(10+size, 10+size/2);
+				ctx.moveTo(10+size/2, 10);
+				ctx.lineTo(10+size/2, 10+size);
+				ctx.stroke();
+				ctx.font = '' + size + 'px/'+size+'px Times';
+				ctx.fillStyle = '#ddd';
+				ctx.textBaseline = 'top';
+				ctx.fillText(char, 10, 10);
+				// render romaji under box
+				ctx.font = '10px Arial';
+				ctx.fillStyle = '#000000';
+				ctx.fillText(romaji, 20, 10+size+10);
+			}
+
+			var measurements = [];
+			function measure(str, fontStyle, cache)
+			{
+				if(measurements[str] != undefined)
+					return measurements;
+
+				var body = document.getElementsByTagName('body')[0];
+				var dummy = document.createElement('div');
+				var dummytext = document.createTextNode(str);
+				dummy.appendChild(dummytext);
+				dummy.setAttribute('style', fontStyle + ' display: inline;');
+				body.appendChild(dummy);
+				var meas = {};
+				meas.height = dummy.offsetHeight;
+				meas.width = dummy.offsetWidth;
+				if(cache != undefined && cache === true)
+					measurements[str] = meas;
+				body.removeChild(dummy);
+				return meas;
+			}
+
+			var trainer, romaji;
+			function startTraining() {
+				romaji = document.getElementById('training').value;
+				// setup canvas
+				drawCharBox(romaji, r2u[romaji], 100);
+				ctx.strokeStyle = '#000000';
+				ctx.lineWidth = 5;
+				// create new trainer and hook event
+				trainer = new Trainer();
+				cvs.onmousedown=trainer.mouseDown;
+				cvs.onmouseup = trainer.mouseUp;
+				cvs.onmousemove = trainer.mouseMove;
+			};
+
+			function endTraining() {
+				console.log('Training for: ' + romaji);
+				console.log(trainer.data());
+			};
+		</script>
+	</head>
+	<body>
+		<canvas id='screen' width='120' height='140'></canvas><br/>
+		<label>Train Romaji</label><input type='text' id='training'/><br/>
+		<button onclick='startTraining()'>Start Training</button><br/>
+		<button onclick='endTraining()'>End Training</button>
+	</body>
+</html>
