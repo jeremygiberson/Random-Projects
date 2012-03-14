@@ -1,0 +1,52 @@
+<html>
+    <head>
+        <script type='text/javascript' src='unicode.js'></script>
+        <script type='text/javascript' src='jpredict.js'></script>
+        <script type='text/javascript' src='trainingdata.js'></script>
+        <script type='text/javascript'>
+
+            var cvs, ctx;
+            var matcher;
+            window.onload = function(){
+                cvs = document.getElementById('screen');
+                ctx = cvs.getContext('2d');
+
+				reset();
+			};
+
+            function drawCharBox(size)
+            {
+                // clear cvs
+                cvs.width = cvs.width;
+                cvs.height = cvs.height;
+                ctx.strokeStyle = '#bbbbbb';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(10, 10, size, size);
+                ctx.strokeStyle = '#eee';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(10, 10+size/2);
+                ctx.lineTo(10+size, 10+size/2);
+                ctx.moveTo(10+size/2, 10);
+                ctx.lineTo(10+size/2, 10+size);
+                ctx.stroke();
+            }
+
+			function reset() {
+				drawCharBox(100);
+				ctx.strokeStyle = '#000000';
+				ctx.lineWidth = 3;
+				ctx.lineCap = 'round';
+
+				matcher = new Recognizer();
+				matcher.bind(cvs);
+			};
+
+        </script>
+    </head>
+    <body>
+        <canvas id='screen' width='120' height='140'></canvas><br/>
+        <div id='guess'></div>
+		<button onclick='reset()'>Reset</button>
+    </body>
+</html>
