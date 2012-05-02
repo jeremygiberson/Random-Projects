@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<script type='text/javascript' src='unicode.js'></script>
-		<script type='text/javascript' src='stroke.js'></script>
+		<script type='text/javascript' src='jpredict.js'></script>
 		<script type='text/javascript'>
 
 			var cvs, ctx;
@@ -62,15 +62,19 @@
 			var trainer, romaji;
 			function startTraining() {
 				romaji = document.getElementById('training').value;
+				if(r2u[romaji] == undefined) {
+					alert('Unrecognized romaji');
+					return;
+				}
+
 				// setup canvas
 				drawCharBox(romaji, r2u[romaji], 100);
 				ctx.strokeStyle = '#000000';
 				ctx.lineWidth = 5;
+				ctx.lineCap = 'round';
 				// create new trainer and hook event
 				trainer = new Trainer();
-				cvs.onmousedown=trainer.mouseDown;
-				cvs.onmouseup = trainer.mouseUp;
-				cvs.onmousemove = trainer.mouseMove;
+				trainer.bind(cvs);
 			};
 
 			function endTraining() {
@@ -81,7 +85,7 @@
 	</head>
 	<body>
 		<canvas id='screen' width='120' height='140'></canvas><br/>
-		<label>Train Romaji</label><input type='text' id='training'/><br/>
+		<label>Train Romaji </label> <input type='text' id='training' style='width: 25px;'/><br/>
 		<button onclick='startTraining()'>Start Training</button><br/>
 		<button onclick='endTraining()'>End Training</button>
 	</body>
