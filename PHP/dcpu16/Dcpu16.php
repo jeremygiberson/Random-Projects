@@ -1,43 +1,9 @@
 <?php
-	
+
 	require_once 'Memory.php';
-	
+	require_once 'Instruction.php';
+
 	// http://0x10c.com/doc/dcpu-16.txt
-	
-	/**
-	 * Helper class for constructing and destructing word values
-	 * into and from instructions
-	 *
-	 */
-	class Instruction
-	{
-		const OPP_NONBASIC = 0x0;
-		const OPP_SET = 0x1;
-		const OPP_ADD = 0x2;
-		const OPP_SUB = 0x3;
-		const OPP_MUL = 0x4;
-		const OPP_DIV = 0x5;
-		const OPP_MOD = 0x6;
-		const OPP_SHL = 0x7;
-		const OPP_SHR = 0x8;
-		const OPP_AND = 0x9;
-		const OPP_BOR = 0xa;
-		const OPP_XOR = 0xb;
-		const OPP_IFE = 0xc;
-		const OPP_IFN = 0xd;
-		const OPP_IFG = 0xe;
-		const OPP_IFB = 0xf;		
-		
-		public static function Factory($opp, $a, $b)
-		{
-			return (($b & 0x3f) << 10) | (($a & 0x3f) << 4) | ($opp & 0xf);	
-		}
-		
-		public static function opp($word) { return ($word & 0xf); }
-		public static function a($word) { return ($word & 0x3f0) >> 4; }
-		public static function b($word) { return ($word & 0xfc00) >> 10; }
-	}
-	
 	class Dcpu16
 	{
 		protected $memory;
@@ -53,22 +19,27 @@
 		protected $boundary;
 		// overflow flag
 		protected $overflow = 0x0;
-		
+
 		protected $clocks = 0;
-		
+
 		public function __construct($memSize = 0x1000)
 		{
 			$this->memory = new Memory($memSize);
 			$this->sp = $memSize-1;
 		}
-		
+
+		public function getRegisterValue($register)
+		{
+			return $this->registers[$register];
+		}
+
 		public function loadProgram($program)
 		{
 			$this->boundary = $this->memory->fromString(0x0, $program);
 			$this->pc = 0;
 			$this->sp = $this->memory->max();
 		}
-		
+
 		/**
 		 * run the cpu
 		 *
@@ -78,7 +49,7 @@
 			while($this->pc <= $this->boundary)
 				$this->tick();
 		}
-		
+
 		/**
 		 * read the value of $val
 		 *
@@ -113,11 +84,16 @@
 			// set O
 			else if($b == 0x1d)
 				return $this->overflow;
-			// [next word], next word (literal), (lteral value 0x00-0x1f)
-			else 
+			// (lteral value 0x00-0x1f)
+			else if($b >= 0x20 && $b <= 0x3f)
+				return ($b - 0x20);
+
+			// [next word], next word (literal),
+
+			else
 				throw new Exception("Read param not implemented");
 		}
-		
+
 		/**
 		 * Set a to val
 		 *
@@ -152,11 +128,16 @@
 			// set O
 			else if($a == 0x1d)
 				$this->overflow = $val;
-			// [next word], next word (literal), (lteral value 0x00-0x1f)
-			else 
+			// (lteral value 0x00-0x1f)
+			// since literrals dont map to a register or position in mem
+			// i dont think it makes sense to be able to set a litteral to something
+			else if($a >= 0x20 && $a <= 0x3f)
+				throw new Exception("Set param illegal (cant set a litteral value to a value)");
+			// [next word], next word (literal)
+			else
 				throw new Exception("Opp param not implemented");
 		}
-		
+
 		/**
 		 * Do a single clock of the cpu
 		 *
@@ -167,14 +148,14 @@
 			$opp = Instruction::opp($instruction);
 			$a = Instruction::a($instruction);
 			$b = Instruction::b($instruction);
-			var_dump('ins', $opp, $a, $b);			
+			echo "\n\nins: $opp, $a, $b\n\n";
 			// increment clock cycle count
-			$this->clocks++;			
+			$this->clocks++;
 			switch($opp)
 			{
 				// handle set instruction
 				case Instruction::OPP_SET:
-					$this->set($a, $b);
+					$this->set($a, $this->read($b));
 					// increment program counter
 					$this->pc++;
 					break;
@@ -186,16 +167,17 @@
 					$this->set($a, $val);
 					// increment program counter
 					$this->pc++;
+					break;
 				default:
-					throw new Exception("Opp not implemented");
+					throw new Exception("Opp ($opp) not implemented");
 			}
 		}
-		
+
 		protected function nextWord()
 		{
-			
+
 		}
-		
+
 		/**
 		 * Debug output
 		 *
@@ -207,32 +189,16 @@
 			foreach($this->registers as $r)
 				$values[] = str_pad(dechex($r), 4, '0', STR_PAD_LEFT);
 			echo join(' ', $values) . "\n";
-			
+
 			$values = array();
+			/*
 			echo "\nValues of ram pointed to by registers:\n[A]  [B]  [C]  [X]  [Y]  [Z]  [I]  [J]\n";
 			foreach($this->registers as $r)
 				$values[] = str_pad(dechex($this->memory->get($r)), 4, '0', STR_PAD_LEFT);
 			echo join(' ', $values) . "\n";
+			*/
 
 			echo "\nRam:";
 			$this->memory->dump();
-		}	
+		}
 	}
-
-	// compile program
-	$mem = new Memory();
-	$mem->set(0x0, Instruction::Factory(Instruction::OPP_SET, 0x0, 0x5));
-	$mem->set(0x1, Instruction::Factory(Instruction::OPP_SET, 0x1, 0x4));	
-	$mem->set(0x2, Instruction::Factory(Instruction::OPP_ADD, 0x0, 0x1));
-	$program = $mem->toString(0x0, 0x1);
-	var_dump($program);
-
-	// run
-	$cpu = new Dcpu16(0xf);
-	$cpu->loadProgram($program);
-	//$cpu->dump();	
-	$cpu->tick();
-	//$cpu->dump();
-	$cpu->tick();
-	$cpu->tick();
-	$cpu->dump();
