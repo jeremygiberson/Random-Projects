@@ -46,8 +46,11 @@
 		 */
 		public function run()
 		{
-			while($this->pc <= $this->boundary)
+			while($this->pc < $this->boundary)
+			{
+				echo "PC: {$this->pc}, END: {$this->boundary}\n";
 				$this->tick();
+			}
 		}
 
 		/**
@@ -87,8 +90,10 @@
 			// (lteral value 0x00-0x1f)
 			else if($b >= 0x20 && $b <= 0x3f)
 				return ($b - 0x20);
-
-			// [next word], next word (literal),
+			// next word (literal)
+			else if($b == 0x1f)
+				return $this->memory->get($this->pc++);
+			// [next word],
 
 			else
 				throw new Exception("Read param not implemented");
@@ -148,6 +153,8 @@
 			$opp = Instruction::opp($instruction);
 			$a = Instruction::a($instruction);
 			$b = Instruction::b($instruction);
+			// increment pc
+			$this->pc++;
 			echo "\n\nins: $opp, $a, $b\n\n";
 			// increment clock cycle count
 			$this->clocks++;
@@ -157,16 +164,19 @@
 				case Instruction::OPP_SET:
 					$this->set($a, $this->read($b));
 					// increment program counter
-					$this->pc++;
+					//$this->pc++;
 					break;
 				case Instruction::OPP_ADD:
 					$val = $this->read($a) + $this->read($b);
 					If($val > 0xffff)
+					{
 						$this->overflow = 0x1;
+						$val -= 0xffff;
+					}
 					else $this->overflow = 0x0;
 					$this->set($a, $val);
 					// increment program counter
-					$this->pc++;
+					//$this->pc++;
 					break;
 				default:
 					throw new Exception("Opp ($opp) not implemented");
