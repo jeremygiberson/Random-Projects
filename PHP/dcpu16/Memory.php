@@ -11,8 +11,8 @@
 */
 
 	/**
-	 * Memory 
-	 * 
+	 * Memory
+	 *
 	 * Usage
 	 * $m = new Memory();
 	 * $m->set(0x1, ord('a'));
@@ -38,7 +38,7 @@
 			for($i = 0; $i < $this->size; $i++)
 				$this->mem[] = chr(0).chr(0); // 2 byte/1word/16 bits
 		}
-		
+
 		/**
 		 * Set $position in memory to $wordValue
 		 *
@@ -51,7 +51,7 @@
 			$high = ((intval($wordValue) >> 8) & 255);
 			$this->mem[$position] = chr($high).chr($low);
 		}
-		
+
 		/**
 		 * Get value at $position in memory
 		 *
@@ -64,9 +64,9 @@
 			$low = ord($this->mem[$position][1]);
 			return ($high << 8) | $low;
 		}
-		
+
 		public function max() { return $this->size; }
-		
+
 		/**
 		 * Debug output contents of memory
 		 */
@@ -76,14 +76,15 @@
 			{
 				if(($i) % 8 == 0)
 					echo "\n" . str_pad(dechex($i), 4, '0', STR_PAD_LEFT) . ': ';
-				
+
 				echo str_pad(dechex($this->get($i)), 4, '0', STR_PAD_LEFT) . ' ';
-				
+
 				if($i > 8 * 32)
 					break;
 			}
+			echo "\n\n";
 		}
-		
+
 		/**
 		 * Convert section of memory to string representation
 		 *
@@ -101,7 +102,7 @@
 				$str .= $this->mem[$i];
 			return $str;
 		}
-		
+
 		/**
 		 * Starting at $position loads $string'ized memory
 		 * returns the last position of memory that was loaded
@@ -118,9 +119,9 @@
 				throw new Exception("Memory string is not a factor of 2");
 			if($position + (strlen($string)/2) > $this->size)
 				throw new Exception("Loaded memory (from $position) exceeds memory bounds");
-				
+
 			$to = strlen($string)/2;
-			
+
 			for($i = $position; $i < $to; $i++)
 				$this->mem[$i] = substr($string, $i*2, 2);
 			return $to;
