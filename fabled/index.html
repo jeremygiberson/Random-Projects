@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+		<link href='http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:regular,bold&subset=latin' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href='fabled.css' type='text/css'>
+		<script type='text/javascript' src='jquery.js'></script>
+		<script type='text/javascript' src='jquery.fabled.js'></script>
+		<script type='text/javascript'>
+			jQuery(document).ready(function(){
+				jQuery('#1').fabled({'complete': function(){this.innerHTML='Sent';}});
+				jQuery('#2').fabled({'complete': function(){this.innerHTML='Fine'; jQuery(this).hide(750);},'duration': 1500});
+			});
+		</script>
+    	<style type='text/css'>
+			html { background: rgb(54,66,41); }
+			body { margin: 10px; color: #eee; font-family: 'Yanone Kaffeesatz', arial, serif; font-size: 12pt;}
+			.feature { background: rgb(66,77,54); width: 300px; margin: 10% auto; padding: 20px; }
+			.yanone
+			{
+				font-family: 'Yanone Kaffeesatz', arial, serif;
+				font-size: 18pt;
+				font-weight: 700;
+			}
+			.button
+			{
+				width: 100px;
+			}
+			a.yellow { color: yellow; }
+    	</style>
+    </head>
+    <body>
+    	<div class='feature'>
+    		<div>
+			<h2>Fabled Buttons</h2>
+			<font size='2'>
+				Code: Jeremy Giberson<br/>
+				Design: Michael Schultz<br/>
+				Url: <a class='yellow' href='http://forrst.com/posts/h1_Fable_Button_h1_I_had_this_idea_for_a_new_se-7tB'>Fable Button Post on Forrst</a>
+			</font>
+			<p>Fabled buttons are based on the action buttons from the Game Fable 2. When an action was performable, an icon for the gamepad A button would show up on screen prompting the user to press and hold. The player would be required to press and hold A until the progress meter surrounding the A icon filled up.
+			Michael Schultz was inspired by this game feature and decided to post on Forrst with a call to action on creating a similar element for HTML buttons.
+			</p>
+			<a href='javascript://' id='1' class='button yanone'>Send</a>
+			<a href='javascript://' id='2' class='button yanone'>Disapear</a>
+			<br style='clear: both;'/>
+			</div>
+		</div>
+    </body>
+</html>
