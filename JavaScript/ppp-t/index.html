@@ -1,0 +1,27 @@
+<html>
+	<head>
+		<script type='text/javascript' src='js/lib/jquery.js'></script>
+		<script type='text/javascript' src='js/lib/underscore.js'></script>
+		<script type='text/javascript' src='js/lib/backbone.js'></script>
+		<script type='text/javascript' src='js/lib/backbone.localstorage.js'></script>
+		<script type='text/javascript' src='js/main.js'></script>
+		<style type='text/css'>
+			.file { border: solid 1px #ff8855; width: 100px; height: 200px; }
+			.layer { border: solid 1px #ff0000; width: 120px; height: 40px; }
+			.toolbar { background: #ccc; }
+			a.button { text-decoration: none; color: #333; margin: 4px; cursor: pointer; }
+			a.button:hover { text-decoration: underline; }
+			a.button:active { color: #111; background: #aaa;  }
+		</style>
+	</head>
+	<body>
+		<div id='app'></div>
+
+		<script type='text/template' id='app-template'>
+			<div class='toolbar'>
+				<a class='button' action='new'>new</a>
+				<a class='button' action='save'>save</a>
+			</div>
+		</script>
+	</body>
+</html>

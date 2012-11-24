@@ -1,0 +1,99 @@
+<html>
+    <head>
+        <script type='text/javascript' src='js/sylvester.js'></script>
+        <script type='text/javascript' src='js/debug.js'></script>
+        <script type='text/javascript' src='js/TimeManager.js'></script>
+        <script type='text/javascript' src='js/ShaderManager.js'></script>
+        <script type='text/javascript' src='js/TextureManager.js'></script>
+        <script type='text/javascript' src='js/SpriteSheet.js'></script>
+        <script type='text/javascript' src='js/Quad.js'></script>
+        <script type='text/javascript' src='js/QuadBatch.js'></script>
+        <script type='text/javascript' src='js/MvMatrix.js'></script>
+        <script type='text/javascript' src='js/TextArea.js'></script>
+        <script type='text/javascript' src='js/GameEngine.js'></script>
+        <script type='text/javascript' src='js/EditorState.js'></script>
+        <script type='text/javascript' src='js/MenuState.js'></script>
+        <script type='text/javascript'>
+            var GLES20, canvas;
+
+            window.onload = function(){
+                try {
+                    canvas = document.getElementById('screen');
+                    GLES20 = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
+                    //GLES20 = canvas.getContext("experimental-webgl");
+                    GLES20.viewportWidth = canvas.width;
+                    GLES20.viewportHeight = canvas.height;
+                    GLES20.clearColor(1, 0, 1, 1);
+                    GLES20.enable(GLES20.BLEND);
+                    GLES20.enable(GLES20.DEPTH_TEST);
+//                    GLES20.enable(GLES20.CULL_FACE);
+                    GLES20.blendFunc(GLES20.SRC_ALPHA, GLES20.ONE_MINUS_SRC_ALPHA);
+                    GLES20.enableVertexAttribArray(0);
+                    GLES20.enableVertexAttribArray(1);
+                    GLES20.enableVertexAttribArray(2);
+                    //GLES20.enableVertexAttribArray(3);
+                    GLES20.activeTexture(GLES20.TEXTURE0);
+                    GLES20.viewport(0, 0, GLES20.viewportWidth, GLES20.viewportHeight);
+                } catch(e) {
+                    alert("failed to init gl: " + e);
+                }
+
+                // init game
+                GameEngine.init();
+
+                // add game states
+                GameEngine.addState('menu', new MenuState());
+                GameEngine.addState('editor', new EditorState());
+
+                // activate first state
+                GameEngine.useState('menu');
+
+                // game loop
+                setInterval(GameEngine.main,10);
+
+            };
+        </script>
+
+<script id="vs" type="x-shader/x-vertex">
+	  uniform mat4 uOrthoMatrix;
+	  uniform mat4 uTransformMatrix;
+	  attribute vec3 aVertexPosition;
+	  attribute vec2 aTexturePosition;
+	  attribute vec4 aColor;
+	  varying vec2 vTextureCoord;
+	  varying vec4 vColor;
+
+	  void main(void) {
+		vec4 vertex = vec4(aVertexPosition, 1);
+		vertex *= uTransformMatrix;
+
+		// set vertex final position
+		gl_Position = uOrthoMatrix * vertex;
+		// pass uv coord to frag shader
+		vTextureCoord = aTexturePosition;
+		vColor = aColor;
+	  }
+</script>
+
+<script id="fs" type="x-shader/x-fragment">
+	  precision mediump float;
+	  varying vec2 vTextureCoord;
+	  varying vec4 vColor;
+	  uniform sampler2D uSampler;
+	  vec4 color, texel;
+
+	  void main(void) {
+		color = vColor;
+		//gl_FragColor = uColor;
+		texel = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+		gl_FragColor = color * texel;
+	  }
+</script>
+
+
+
+    </head>
+    <body>
+        <canvas style='margin: auto;' id='screen' width='800' height='480' tabindex='1'></canvas>
+    </body>
+</html>
