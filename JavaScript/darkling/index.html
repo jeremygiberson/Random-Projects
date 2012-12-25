@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Darkling - A Ludum Dare 25 entry</title>
+    <script type='text/javascript' src='js/raphael.js'></script>
+    <script type='text/javascript' src='js/raphael.util.js'></script>
+    <script type='text/javascript' src='js/pubsub.js'></script>
+    <script type='text/javascript' src='js/darkling.js'></script>
+    <script type='text/javascript' src='js/renderer.js'></script>
+
+    <script type='text/javascript'>
+        var screen = {'width': 200, 'height': 340 };
+
+        var paper, circle;
+
+        window.onload = function(){
+            darkling.init();
+            document.addEventListener('keyup', darkling.onKeyUp);
+            document.addEventListener('keydown', darkling.onKeyDown);
+
+            // run simulation
+            setInterval(loop, 10);
+        };
+
+        var lastTime = (new Date()).getTime();
+        function loop() {
+            var curTime = (new Date()).getTime();
+            var dt = curTime - lastTime;
+            lastTime = curTime;
+
+            darkling.think(dt/1000);
+        };
+    </script>
+</head>
+<body>
+
+</body>
+</html>

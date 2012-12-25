@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript" src="javascript/glutil.js"></script>
+    <script type="text/javascript" src="javascript/shaders.js"></script>
+    <script type='text/javascript'>
+        var screen = {'width': 320, 'height': 240 };
+        var img = new Image();
+        img.src = '64.png';
+
+        window.onload = function(){
+            // Get A WebGL context
+            var canvas = document.getElementById("canvas");
+            var gl = canvas.getContext("experimental-webgl");
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+            var color = glUtil.hex2rgb('#624944');
+            gl.clearColor(color.r, color.g, color.b, 1);
+            //gl.colorMask(true, true, true, true);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            var texture = glUtil.createTextureFromImage(gl, img);
+            texture._width = img.width;
+            texture._height = img.height;
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            SpriteShader.init(gl);
+            SpriteShader.setResolution(screen.width, screen.height);
+            SpriteShader.setTexture(texture);
+            for(var i = 0; i < 122; i++) {
+                var x = glUtil.random(0, screen.width);
+                var y = glUtil.random(0, screen.height);
+                SpriteShader.sprite(x, y, 32, 32, 16, 16, 32, 32);
+            }
+            SpriteShader.render(gl);
+        };
+
+        var lastTime = (new Date()).getTime();
+        function loop() {
+            var curTime = (new Date()).getTime();
+            var dt = curTime - lastTime;
+            lastTime = curTime;
+
+            darkling.think(dt/1000);
+        };
+    </script>
+</head>
+<body>
+    <canvas id='canvas' width='320' height='240'></canvas>
+</body>
+<script id="SpriteShader-vertex" type="x-shader/x-vertex">
+    attribute vec2 a_texCoord;
+    attribute vec2 a_position;
+    uniform vec2 u_resolution;
+    varying vec2 v_texCoord;
+
+    void main() {
+        // convert from pixels to 0.0->0.1
+        vec2 zeroToOne = a_position / u_resolution;
+        // convert from 0->1 to 0->2
+        vec2 zeroToTwo = zeroToOne * 2.0;
+        // convert from 0->2 to -1->1 (and invert)
+        vec2 clipSpace = (zeroToTwo - 1.0) * vec2(1,-1);
+        // set the vertex position
+        gl_Position = vec4(clipSpace, 0, 1);
+        // pass the texCoord to the fragment shader
+        // The GPU will interpolate this value between points
+        v_texCoord = a_texCoord;
+    }
+</script>
+
+<script id="SpriteShader-fragment" type="x-shader/x-fragment">
+    precision mediump float;
+
+    // our texture
+    uniform sampler2D u_image;
+    uniform vec2 u_texSize;
+
+    // the texCoords passed in from the vertex shader.
+    varying vec2 v_texCoord;
+
+    void main() {
+        vec2 uvCoord = vec2(v_texCoord.x/64.0, v_texCoord.y/64.0);
+        gl_FragColor = texture2D(u_image, uvCoord);
+    }
+</script>
+</html>
