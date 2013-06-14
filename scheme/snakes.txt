@@ -1,10 +1,12 @@
+#lang racket
+(require racket/gui)
 ;; Snake Game in windows VIA DrScheme && MrEd
 ;; Author: Jeremy Giberson
 ;; References: Online Documentation
 ;; Game Reference: None, Original - ground up 
 (define (SNAKES)
     ;; Window and Canvas implimentation extracted and modified from online documentation
-    ;; Make a 340 × 200 canvas
+    ;; Make a 340 Ã— 200 canvas
     (define frame (instantiate frame% ("Nibbles - Dr Scheme Project") (width 340) (height 218) (min-width 340) (min-height 218) (stretchable-width #f) (stretchable-height #f)))
     ;; message area
     (define msg (instantiate message% ("Nibbles the Snakes Clone" frame)))
@@ -237,7 +239,13 @@
                 (set! lastPos (getTailSeg SNAKE_HEAD)) ; get current tail position incase we add a segment
                 (moveSnake) ; change snake position
                 (renderGame dc) ; draw board, apple and snake
-                (cond [(isCollision SNAKE_HEAD APPLE) (set! SNAKE_HEAD (appendSeg SNAKE_HEAD lastPos)) (newline)(display "Ate an Apple!") (set! SCORE (+ SCORE 40))]) ; if you hit an apple, grow
+                (cond [
+                       (isCollision SNAKE_HEAD APPLE) 
+                       (set! SNAKE_HEAD (appendSeg SNAKE_HEAD lastPos)) 
+                       (newline)(display "Ate an Apple!") 
+                       (set! SCORE (+ SCORE 40))
+                       (set! APPLE (make-posn (* (random 11) 10) (* (random 11) 10)))
+                      ]) ; if you hit an apple, grow
 
            (send msg set-label (string-append "Points:" (number->string SCORE)))
            (set! SCORE (+ SCORE 1));; one point for every round you are alive
